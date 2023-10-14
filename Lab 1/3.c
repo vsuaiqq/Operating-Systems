@@ -3,9 +3,9 @@
 void copy_file(FILE* input_file, FILE* output_file) 
 {
     char c;
-    while ((c = fgetc(input_file)) != EOF) 
+    while (fread(&c, sizeof(char), 1, input_file)) 
     {
-        fputc(c, output_file);
+        fwrite(&c, sizeof(char), 1, output_file);
     }
 }
 
@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    FILE* input_file = fopen(argv[1], "r");
-    FILE* output_file = fopen(argv[2], "w");
+    FILE* input_file = fopen(argv[1], "rb");
+    FILE* output_file = fopen(argv[2], "wb");
 
     if (input_file == NULL || output_file == NULL) 
     {

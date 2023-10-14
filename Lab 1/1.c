@@ -1,12 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PTR_OFFSET 3
-#define BYTES_TO_READ 4
-#define BYTES_TO_WRITE 11
-
-const char bytes[BYTES_TO_WRITE] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
-
 int main(int argc, char* argv[]) 
 {
     if (argc < 2)
@@ -14,8 +8,10 @@ int main(int argc, char* argv[])
         printf("invalid number of arguments detected\n");
         return 1;
     }
+    const int PTR_OFFSET = 3, BYTES_TO_READ = 4, BYTES_TO_WRITE = 11;
+    const char bytes[BYTES_TO_WRITE] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
 
-    FILE* file = fopen(argv[1], "w");
+    FILE* file = fopen(argv[1], "wb");
     if (file == NULL) 
     {
         printf("file open error\n");
@@ -31,7 +27,7 @@ int main(int argc, char* argv[])
 
     fclose(file);
 
-    file = fopen(argv[1], "r");
+    file = fopen(argv[1], "rb");
     if (file == NULL) 
     {
         printf("file open error\n");
@@ -46,7 +42,7 @@ int main(int argc, char* argv[])
 
     fclose(file);
 
-    file = fopen(argv[1], "r");
+    file = fopen(argv[1], "rb");
     if (file == NULL) 
     {
         printf("file error\n");
