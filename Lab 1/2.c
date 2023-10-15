@@ -191,7 +191,9 @@ login_user_status_code login_user(User* users, char* login, int pin_code, int si
         {
             if (users[i].pin_code == pin_code) 
             {
-                *is_logged = true, *requests_lim = users[i].sanctions, strcpy(cur_user, login);
+                *is_logged = true;
+                *requests_lim = users[i].sanctions;
+                strcpy(cur_user, login);
                 return lu_success;
             }
             return lu_not_valid;
@@ -401,11 +403,11 @@ int main()
                             return 1;
                         }
                         printf("number must be non-negative\n");
-                        int k = 0;
+                        int scanf_check = 0;
                         do 
                         {
-                            k = scanf("%d", &number);
-                        } while (number < 0 && k != 1);
+                            scanf_check = scanf("%d", &number);
+                        } while (number < 0 && scanf_check != 1);
                         printf("12345 to confirm\n");
                         scanf("%d", &confirm_code);
                         if (confirm_sanctions(confirm_code)) 

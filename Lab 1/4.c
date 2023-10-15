@@ -1,12 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include <math.h>
 #include <string.h>
-#include <time.h>
-#include <ctype.h>
-#include <stdarg.h>
 
 typedef enum status_code {
     success,
@@ -22,55 +15,7 @@ typedef enum commands
     INVALID_NUMBER_OF_ARGS
 } commands;
 
-status_code xor8(const char* path_file, int* res) 
-{
-    FILE *file = fopen(path_file, "rb");
-    if (file == NULL) return file_error;
-    char byte;
-    *res = 0;
-    while (fread(&byte, sizeof(char), 1, file)) *res ^= (int)byte;
-    fclose(file);
-    return success;
-}
-
-status_code xor32(const char* path_file, int* res) 
-{
-    FILE *file = fopen(path_file, "rb");
-    if (file == NULL) return file_error;
-    char byte[4];
-    *res = 0;
-    int bytes_cnt = 1;
-    while (bytes_cnt) 
-    {
-        bytes_cnt = fread(byte, sizeof(char), 4, file);
-        int num_32_bit = 0, offset;
-        for (int i = 0; i < bytes_cnt; ++i) 
-        {
-            offset = 0;
-            offset = (int)byte[i] << 8 * (3 - i);
-            num_32_bit += offset;
-        }
-        *res ^= num_32_bit;
-    }
-    fclose(file);
-    return success;
-}
-
-status_code mask(const char* path_file, char* mask_hex, int* res) 
-{
-    FILE *file = fopen(path_file, "rb");
-    if (file == NULL) return file_error;
-    int mask_num, byte;
-    sscanf(mask_hex, "%x", &mask_num);
-    *res = 0;
-    while(fread(&byte, sizeof(unsigned int), 1, file)) 
-    {
-        if (mask_num == byte) (*res)++;
-    }
-    return success;
-}
-
-commands get_command_type(char* argv[], int argc) 
+commands get_command_type(int argc, char* argv[]) 
 {
     if (!strcmp(argv[2], "xor8")) return XOR8;
     else if (!strcmp(argv[2], "xor32")) return XOR32;
@@ -79,6 +24,52 @@ commands get_command_type(char* argv[], int argc)
         if (argc < 4) return INVALID_NUMBER_OF_ARGS;
         return MASK;
     } else return UNKNOWN;
+}
+
+status_code xor8(const char* path, int* res) 
+{
+    FILE *file = fopen(path, "rb");
+    if (file == NULL) return file_error;
+    char byte;
+    *res = 0;
+    while (fread(&byte, sizeof(char), 1, file)) *res ^= (int)byte;
+    fclose(file);
+    return success;
+}
+
+status_code xor32(const char* path, int* res) 
+{
+    FILE *file = fopen(path, "rb");
+    if (file == NULL) return file_error;
+    char byte[4];
+    *res = 0;
+    int bytes_cnt, num_32;
+    do 
+    {
+        bytes_cnt = fread(byte, sizeof(char), 4, file);
+        num_32 = 0;
+        for (int i = 0; i < bytes_cnt; ++i) 
+        {
+            num_32 += (int)byte[i] << 8 * (3 - i);
+        }
+        *res ^= num_32;
+    } while (bytes_cnt);
+    fclose(file);
+    return success;
+}
+
+status_code mask(const char* path, char* mask_hex, int* res) 
+{
+    FILE *file = fopen(path, "rb");
+    if (file == NULL) return file_error;
+    int mask_num, byte;
+    sscanf(mask_hex, "%x", &mask_num);
+    *res = 0;
+    while(fread(&byte, sizeof(int), 1, file)) 
+    {
+        if (mask_num == byte) (*res)++;
+    }
+    return success;
 }
 
 int main(int argc, char* argv[]) 
@@ -101,7 +92,7 @@ int main(int argc, char* argv[])
     fwrite(bytes, sizeof(char), sizeof(bytes) / sizeof(bytes[0]), file);
     fclose(file);
 
-    switch (get_command_type(argv, argc)) {
+    switch (get_command_type(argc, argv)) {
         case XOR8:
             if (xor8(argv[1], &res) == file_error) 
             {
